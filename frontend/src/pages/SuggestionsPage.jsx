@@ -97,6 +97,8 @@ export function SuggestionsPage({ members }) {
   const [sortBy, setSortBy] = useState('votes');
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState(null);
+  const [commentText, setCommentText] = useState('');
   const [newSuggestion, setNewSuggestion] = useState({
     title: '',
     description: '',
@@ -382,9 +384,13 @@ export function SuggestionsPage({ members }) {
                         💬 {suggestion.comments}
                       </span>
                       <Button
+                        onClick={() => {
+                          setExpandedId(expandedId === suggestion.id ? null : suggestion.id);
+                          setCommentText('');
+                        }}
                         style={{
-                          backgroundColor: 'transparent',
-                          color: T.primary,
+                          backgroundColor: expandedId === suggestion.id ? T.primary : 'transparent',
+                          color: expandedId === suggestion.id ? T.bg : T.primary,
                           border: `1px solid ${T.primary}`,
                           padding: '6px 14px',
                           borderRadius: '4px',
@@ -398,6 +404,64 @@ export function SuggestionsPage({ members }) {
                       </Button>
                     </div>
                   </div>
+
+                  {/* Expanded Discussion Area */}
+                  {expandedId === suggestion.id && (
+                    <div style={{
+                      marginTop: '16px',
+                      paddingTop: '16px',
+                      borderTop: `1px solid ${T.bgCard}`,
+                    }}>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                        <textarea
+                          value={commentText}
+                          onChange={(e) => setCommentText(e.target.value)}
+                          placeholder="Share your thoughts on this idea..."
+                          style={{
+                            flex: 1,
+                            padding: '10px 12px',
+                            backgroundColor: T.bg,
+                            border: `1px solid ${T.bgCard}`,
+                            borderRadius: '6px',
+                            color: T.text,
+                            fontSize: '13px',
+                            fontFamily: 'inherit',
+                            minHeight: '60px',
+                            resize: 'vertical',
+                            boxSizing: 'border-box',
+                          }}
+                        />
+                        <Button
+                          onClick={() => {
+                            if (commentText.trim()) {
+                              setSuggestions(suggestions.map(s =>
+                                s.id === suggestion.id
+                                  ? { ...s, comments: s.comments + 1 }
+                                  : s
+                              ));
+                              setCommentText('');
+                              setExpandedId(null);
+                            }
+                          }}
+                          disabled={!commentText.trim()}
+                          style={{
+                            backgroundColor: commentText.trim() ? T.primary : T.textMuted,
+                            color: T.bg,
+                            border: 'none',
+                            padding: '10px 16px',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            cursor: commentText.trim() ? 'pointer' : 'not-allowed',
+                            opacity: commentText.trim() ? 1 : 0.5,
+                            alignSelf: 'flex-end',
+                          }}
+                        >
+                          Post
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </Card>
             ))

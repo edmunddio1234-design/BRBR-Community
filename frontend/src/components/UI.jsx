@@ -72,8 +72,8 @@ export function Card({ children, style = {}, onClick, hoverable = false }) {
   );
 }
 
-export function Modal({ open, onClose, title, children }) {
-  if (!open) return null;
+export function Modal({ open, isOpen, onClose, title, children, style = {} }) {
+  if (!open && !isOpen) return null;
   return (
     <div onClick={onClose} style={{
       position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
