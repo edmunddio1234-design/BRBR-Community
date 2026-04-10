@@ -31,6 +31,21 @@ export default function Navbar({ page, setPage, user, notifications = [], unread
           maxWidth: '1400px', margin: '0 auto', display: 'flex',
           alignItems: 'center', justifyContent: 'space-between', height: '64px',
         }}>
+          {/* Back to Main Site */}
+          <a href="https://br-collectionnddf.vercel.app" style={{
+            display: 'flex', alignItems: 'center', gap: '6px',
+            textDecoration: 'none', color: T.textMuted, fontSize: '11px',
+            fontFamily: T.fontBody, letterSpacing: '0.5px', textTransform: 'uppercase',
+            padding: '6px 12px', borderRadius: '4px',
+            border: `1px solid ${T.border}`, transition: 'all 0.3s ease',
+            marginRight: '12px', flexShrink: 0,
+          }}
+          onMouseOver={(e) => { e.currentTarget.style.color = T.primary; e.currentTarget.style.borderColor = T.primary; }}
+          onMouseOut={(e) => { e.currentTarget.style.color = T.textMuted; e.currentTarget.style.borderColor = T.border; }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5m0 0l7 7m-7-7l7-7"/></svg>
+            BRBR
+          </a>
           {/* Logo */}
           <div onClick={() => setPage('home')} style={{
             cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px',
