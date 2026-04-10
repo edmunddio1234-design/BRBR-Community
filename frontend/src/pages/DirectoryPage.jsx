@@ -4,17 +4,9 @@ import { S } from '../styles';
 import { Avatar, Button, Tag, Card, TabBar } from '../components/UI';
 import Icon from '../components/Icons';
 import { READING_GROUPS } from '../constants';
+import { MOCK_MEMBERS } from '../mockMembers';
 
 const LOCATIONS = ['All', 'Baton Rouge', 'Houston', 'Atlanta', 'Dallas', 'New Orleans'];
-
-const MOCK_MEMBERS = [
-  { id: 1, name: 'Sarah Chen', avatar: 'SC', work: 'Counselor', location: 'Baton Rouge', currentGroups: ['Healing Through Words', 'Faith Foundations'], readingGroups: [] },
-  { id: 2, name: 'Marcus Johnson', avatar: 'MJ', work: 'Youth Pastor', location: 'Houston', currentGroups: ['Faith Foundations', 'Growth Mindset'], readingGroups: [] },
-  { id: 3, name: 'Alex Rivera', avatar: 'AR', work: 'Social Worker', location: 'Atlanta', currentGroups: ['Healing Through Words', 'Growth Mindset'], readingGroups: [] },
-  { id: 4, name: 'Emma Wilson', avatar: 'EW', work: 'Teacher', location: 'Baton Rouge', currentGroups: ['Faith Foundations'], readingGroups: [] },
-  { id: 5, name: 'James Lee', avatar: 'JL', work: 'Mentor', location: 'Dallas', currentGroups: ['Growth Mindset', 'Healing Through Words'], readingGroups: [] },
-  { id: 6, name: 'Sophia Garcia', avatar: 'SG', work: 'Nurse', location: 'New Orleans', currentGroups: ['Faith Foundations', 'Growth Mindset'], readingGroups: [] },
-];
 
 export default function DirectoryPage({ members: propMembers, setPage, setSelMember }) {
   const members = (propMembers && propMembers.length > 0) ? propMembers : MOCK_MEMBERS;
@@ -42,21 +34,48 @@ export default function DirectoryPage({ members: propMembers, setPage, setSelMem
     setPage('profile-view');
   };
 
+  // Location stats
+  const locationCounts = useMemo(() => {
+    const counts = {};
+    members.forEach(m => {
+      counts[m.location] = (counts[m.location] || 0) + 1;
+    });
+    return counts;
+  }, [members]);
+
   return (
     <div style={styles.container}>
       {/* Header Section */}
       <div style={styles.header}>
         <h1 style={styles.title}>Reader Directory</h1>
+        <p style={styles.subtitle}>
+          {members.length} beautiful souls across {Object.keys(locationCounts).length} cities — connected through reading, faith, and sisterhood.
+        </p>
         <div style={styles.searchBar}>
           <input
             type="text"
-            placeholder="Search by name, location, or role..."
+            placeholder="Search by name, city, or role..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={styles.searchInput}
           />
           <Icon name="search" style={styles.searchIcon} />
         </div>
+      </div>
+
+      {/* City Stats Bar */}
+      <div style={styles.statsRow}>
+        {LOCATIONS.filter(l => l !== 'All').map(city => (
+          <div key={city} style={{
+            ...styles.statChip,
+            background: selectedLocation === city ? T.primary : T.bgCard,
+            color: selectedLocation === city ? T.black : T.text,
+            cursor: 'pointer',
+          }} onClick={() => setSelectedLocation(city === selectedLocation ? 'All' : city)}>
+            <span style={{ fontWeight: '700', fontSize: '18px' }}>{locationCounts[city] || 0}</span>
+            <span style={{ fontSize: '11px', opacity: 0.8 }}>{city}</span>
+          </div>
+        ))}
       </div>
 
       {/* Filter Tabs */}
@@ -72,6 +91,7 @@ export default function DirectoryPage({ members: propMembers, setPage, setSelMem
       {/* Results Count */}
       <div style={styles.resultCount}>
         {filteredMembers.length} reader{filteredMembers.length !== 1 ? 's' : ''} found
+        {selectedLocation !== 'All' && ` in ${selectedLocation}`}
       </div>
 
       {/* Members Grid */}
@@ -80,12 +100,24 @@ export default function DirectoryPage({ members: propMembers, setPage, setSelMem
           {filteredMembers.map((member) => (
             <Card key={member.id} style={styles.memberCard}>
               <div style={styles.cardHeader}>
-                <Avatar
-                  src={member.avatar}
-                  alt={member.name}
-                  size="lg"
-                  style={styles.avatar}
-                />
+                {/* Profile Avatar with Photo */}
+                <div style={styles.avatarContainer}>
+                  <img
+                    src={member.avatar}
+                    alt={member.name}
+                    style={styles.avatarImage}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                  <div style={{
+                    ...styles.avatarFallback,
+                    display: 'none',
+                  }}>
+                    {member.initials || member.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                  </div>
+                </div>
                 <div style={styles.memberInfo}>
                   <h3 style={styles.memberName}>{member.name}</h3>
                   <p style={styles.memberLocation}>{member.location}</p>
@@ -98,6 +130,13 @@ export default function DirectoryPage({ members: propMembers, setPage, setSelMem
                   <p style={styles.workLabel}>Role</p>
                   <p style={styles.workValue}>{member.work}</p>
                 </div>
+              )}
+
+              {/* Bio Preview */}
+              {member.bio && (
+                <p style={styles.bioPreview}>
+                  {member.bio.length > 90 ? member.bio.slice(0, 90) + '...' : member.bio}
+                </p>
               )}
 
               {/* Reading Groups Tags */}
@@ -154,8 +193,18 @@ const styles = {
     fontSize: '2.5rem',
     fontFamily: T.fontDisplay,
     color: T.text,
-    margin: '0 0 1.5rem 0',
+    margin: '0 0 0.5rem 0',
     fontWeight: 700,
+  },
+
+  subtitle: {
+    fontSize: '0.95rem',
+    color: T.textMuted,
+    margin: '0 0 1.5rem 0',
+    lineHeight: 1.6,
+    maxWidth: '600px',
+    fontFamily: T.fontAccent,
+    fontStyle: 'italic',
   },
 
   searchBar: {
@@ -185,6 +234,26 @@ const styles = {
     pointerEvents: 'none',
   },
 
+  statsRow: {
+    display: 'flex',
+    gap: '12px',
+    marginBottom: '1.5rem',
+    overflowX: 'auto',
+    paddingBottom: '4px',
+  },
+
+  statChip: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '2px',
+    padding: '12px 20px',
+    borderRadius: '8px',
+    border: `1px solid ${T.border}`,
+    minWidth: '100px',
+    transition: 'all 0.2s ease',
+  },
+
   tabsSection: {
     marginBottom: '2rem',
     overflowX: 'auto',
@@ -204,7 +273,7 @@ const styles = {
 
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
     gap: '1.5rem',
   },
 
@@ -215,7 +284,7 @@ const styles = {
     borderRadius: '0.75rem',
     display: 'flex',
     flexDirection: 'column',
-    gap: '1rem',
+    gap: '0.75rem',
     transition: 'all 0.2s ease',
     cursor: 'pointer',
   },
@@ -223,11 +292,36 @@ const styles = {
   cardHeader: {
     display: 'flex',
     gap: '1rem',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
 
-  avatar: {
+  avatarContainer: {
     flexShrink: 0,
+    width: '56px',
+    height: '56px',
+    borderRadius: '50%',
+    overflow: 'hidden',
+    border: `2px solid ${T.primary}`,
+  },
+
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    borderRadius: '50%',
+  },
+
+  avatarFallback: {
+    width: '100%',
+    height: '100%',
+    background: T.gradientPrimary,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '18px',
+    fontWeight: '700',
+    color: T.black,
+    fontFamily: T.fontDisplay,
   },
 
   memberInfo: {
@@ -265,6 +359,15 @@ const styles = {
     fontSize: '0.95rem',
     color: T.text,
     margin: 0,
+  },
+
+  bioPreview: {
+    fontSize: '0.8rem',
+    color: T.textBody,
+    lineHeight: 1.6,
+    margin: 0,
+    fontFamily: T.fontAccent,
+    fontStyle: 'italic',
   },
 
   tagsSection: {
