@@ -7,7 +7,17 @@ import { READING_GROUPS } from '../constants';
 
 const LOCATIONS = ['All', 'Baton Rouge', 'Houston', 'Atlanta', 'Dallas', 'New Orleans'];
 
-export default function DirectoryPage({ members, setPage, setSelMember }) {
+const MOCK_MEMBERS = [
+  { id: 1, name: 'Sarah Chen', avatar: 'SC', work: 'Counselor', location: 'Baton Rouge', currentGroups: ['Healing Through Words', 'Faith Foundations'], readingGroups: [] },
+  { id: 2, name: 'Marcus Johnson', avatar: 'MJ', work: 'Youth Pastor', location: 'Houston', currentGroups: ['Faith Foundations', 'Growth Mindset'], readingGroups: [] },
+  { id: 3, name: 'Alex Rivera', avatar: 'AR', work: 'Social Worker', location: 'Atlanta', currentGroups: ['Healing Through Words', 'Growth Mindset'], readingGroups: [] },
+  { id: 4, name: 'Emma Wilson', avatar: 'EW', work: 'Teacher', location: 'Baton Rouge', currentGroups: ['Faith Foundations'], readingGroups: [] },
+  { id: 5, name: 'James Lee', avatar: 'JL', work: 'Mentor', location: 'Dallas', currentGroups: ['Growth Mindset', 'Healing Through Words'], readingGroups: [] },
+  { id: 6, name: 'Sophia Garcia', avatar: 'SG', work: 'Nurse', location: 'New Orleans', currentGroups: ['Faith Foundations', 'Growth Mindset'], readingGroups: [] },
+];
+
+export default function DirectoryPage({ members: propMembers, setPage, setSelMember }) {
+  const members = (propMembers && propMembers.length > 0) ? propMembers : MOCK_MEMBERS;
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('All');
 
@@ -91,20 +101,19 @@ export default function DirectoryPage({ members, setPage, setSelMember }) {
               )}
 
               {/* Reading Groups Tags */}
-              {member.readingGroups && member.readingGroups.length > 0 && (
+              {member.currentGroups && member.currentGroups.length > 0 && (
                 <div style={styles.tagsSection}>
                   <p style={styles.tagsLabel}>Reading Groups</p>
                   <div style={styles.tags}>
-                    {member.readingGroups.map((groupId) => {
-                      const group = READING_GROUPS.find((g) => g.id === groupId);
-                      return group ? (
-                        <Tag
-                          key={groupId}
-                          label={group.name}
-                          style={styles.tag}
-                        />
-                      ) : null;
-                    })}
+                    {member.currentGroups.map((group, idx) => (
+                      <Tag
+                        key={idx}
+                        label={group}
+                        style={styles.tag}
+                      >
+                        {group}
+                      </Tag>
+                    ))}
                   </div>
                 </div>
               )}
@@ -114,7 +123,9 @@ export default function DirectoryPage({ members, setPage, setSelMember }) {
                 label="View Profile"
                 onClick={() => handleViewProfile(member)}
                 style={styles.viewButton}
-              />
+              >
+                View Profile
+              </Button>
             </Card>
           ))}
         </div>
@@ -176,7 +187,7 @@ const styles = {
 
   tabsSection: {
     marginBottom: '2rem',
-    overflow: 'x auto',
+    overflowX: 'auto',
   },
 
   tabBar: {
@@ -195,9 +206,6 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
     gap: '1.5rem',
-    '@media (max-width: 768px)': {
-      gridTemplateColumns: '1fr',
-    },
   },
 
   memberCard: {

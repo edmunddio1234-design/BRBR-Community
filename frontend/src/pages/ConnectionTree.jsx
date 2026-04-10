@@ -5,7 +5,17 @@ import { Avatar, Tag, Card } from '../components/UI';
 import Icon from '../components/Icons';
 import { READING_GROUPS } from '../constants';
 
-export function ConnectionTree({ members }) {
+const MOCK_MEMBERS = [
+  { id: 1, name: 'Sarah Chen', avatar: 'SC', work: 'Counselor', location: 'Baton Rouge', currentGroups: ['Healing Through Words', 'Faith Foundations'] },
+  { id: 2, name: 'Marcus Johnson', avatar: 'MJ', work: 'Youth Pastor', location: 'Houston', currentGroups: ['Faith Foundations', 'Growth Mindset'] },
+  { id: 3, name: 'Alex Rivera', avatar: 'AR', work: 'Social Worker', location: 'Atlanta', currentGroups: ['Healing Through Words', 'Growth Mindset'] },
+  { id: 4, name: 'Emma Wilson', avatar: 'EW', work: 'Teacher', location: 'Baton Rouge', currentGroups: ['Faith Foundations'] },
+  { id: 5, name: 'James Lee', avatar: 'JL', work: 'Mentor', location: 'Dallas', currentGroups: ['Growth Mindset', 'Healing Through Words'] },
+  { id: 6, name: 'Sophia Garcia', avatar: 'SG', work: 'Nurse', location: 'New Orleans', currentGroups: ['Faith Foundations', 'Growth Mindset'] },
+];
+
+export function ConnectionTree({ members: propMembers }) {
+  const members = (propMembers && propMembers.length > 0) ? propMembers : MOCK_MEMBERS;
   const [expandedGroups, setExpandedGroups] = useState({});
   const [hoveredMember, setHoveredMember] = useState(null);
 
@@ -22,12 +32,14 @@ export function ConnectionTree({ members }) {
   // Calculate stats
   const totalMembers = members.length;
   const activeGroups = READING_GROUPS.filter(g => getMembersInGroup(g).length > 0);
-  const mostActiveGroup = activeGroups.reduce((max, group) => {
-    const count = getMembersInGroup(group).length;
-    const maxCount = getMembersInGroup(max).length;
-    return count > maxCount ? group : max;
-  }, activeGroups[0]);
-  const mostActiveCount = getMembersInGroup(mostActiveGroup).length;
+  const mostActiveGroup = activeGroups.length > 0
+    ? activeGroups.reduce((max, group) => {
+        const count = getMembersInGroup(group).length;
+        const maxCount = getMembersInGroup(max).length;
+        return count > maxCount ? group : max;
+      }, activeGroups[0])
+    : 'None';
+  const mostActiveCount = mostActiveGroup !== 'None' ? getMembersInGroup(mostActiveGroup).length : 0;
 
   // Find shared groups between members
   const getSharedGroups = (member1, member2) => {
@@ -430,22 +442,6 @@ export function ConnectionTree({ members }) {
               );
             })}
           </div>
-        </div>
-      )}
-
-      {/* Empty State */}
-      {members.length === 0 && (
-        <div style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          textAlign: 'center',
-          padding: '60px 20px',
-        }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🌱</div>
-          <h3 style={{ ...S.h2, marginBottom: '8px' }}>Community Network</h3>
-          <p style={{ ...S.body, color: T.textMuted }}>
-            No members yet. The community will begin to take shape as members join reading groups.
-          </p>
         </div>
       )}
     </div>

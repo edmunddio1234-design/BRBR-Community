@@ -10,7 +10,7 @@ const MOCK_SUGGESTIONS = [
     id: 1,
     title: "Add a monthly virtual book club meetup",
     description: "Organize monthly virtual meetings where members can discuss selected books. Could include author Q&A sessions and book recommendations.",
-    author: { id: 1, name: "Sarah Chen", avatar: "https://i.pravatar.cc/150?img=1" },
+    author: { id: 1, name: "Sarah Chen", avatar: "SC" },
     createdAt: "2026-03-28",
     votes: 24,
     hasVoted: false,
@@ -22,7 +22,7 @@ const MOCK_SUGGESTIONS = [
     id: 2,
     title: "Chapter discussion guides",
     description: "Create downloadable discussion guides for each chapter of featured books. Include thought-provoking questions and themes to explore.",
-    author: { id: 2, name: "Marcus Johnson", avatar: "https://i.pravatar.cc/150?img=2" },
+    author: { id: 2, name: "Marcus Johnson", avatar: "MJ" },
     createdAt: "2026-03-25",
     votes: 18,
     hasVoted: false,
@@ -34,7 +34,7 @@ const MOCK_SUGGESTIONS = [
     id: 3,
     title: "Local meetup coordination",
     description: "Add a feature to help coordinate in-person meetups in different cities. Include location-based groups and event scheduling.",
-    author: { id: 3, name: "Emma Rodriguez", avatar: "https://i.pravatar.cc/150?img=3" },
+    author: { id: 3, name: "Emma Rodriguez", avatar: "ER" },
     createdAt: "2026-03-20",
     votes: 32,
     hasVoted: false,
@@ -46,7 +46,7 @@ const MOCK_SUGGESTIONS = [
     id: 4,
     title: "Reading challenge tracker",
     description: "Gamify reading with challenges like 'read 12 books in a year' or 'explore 3 different genres.' Track progress and earn badges.",
-    author: { id: 4, name: "David Kim", avatar: "https://i.pravatar.cc/150?img=4" },
+    author: { id: 4, name: "David Kim", avatar: "DK" },
     createdAt: "2026-03-15",
     votes: 28,
     hasVoted: true,
@@ -58,7 +58,7 @@ const MOCK_SUGGESTIONS = [
     id: 5,
     title: "Integrated book recommendations feed",
     description: "Personalized feed showing book recommendations from members you follow. Include filtering by genre, rating, and read status.",
-    author: { id: 5, name: "Lisa Wang", avatar: "https://i.pravatar.cc/150?img=5" },
+    author: { id: 5, name: "Lisa Wang", avatar: "LW" },
     createdAt: "2026-03-10",
     votes: 15,
     hasVoted: false,
@@ -73,6 +73,24 @@ const STATUS_COLORS = {
   'In Progress': '#7B68EE',
   'Implemented': T.success
 };
+
+// Normalize backend suggestion data to match frontend shape
+const normalizeSuggestion = (item) => ({
+  id: item.id,
+  title: item.title || '',
+  description: item.description || '',
+  author: item.author || {
+    id: item.user_id || 0,
+    name: item.name || 'Anonymous',
+    avatar: item.avatar || (item.name ? item.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '??'),
+  },
+  createdAt: item.createdAt || (item.created_at ? item.created_at.split('T')[0] : new Date().toISOString().split('T')[0]),
+  votes: item.votes ?? item.vote_count ?? 0,
+  hasVoted: item.hasVoted ?? false,
+  comments: item.comments ?? item.comment_count ?? 0,
+  status: item.status || 'Open',
+  category: item.category || 'Features',
+});
 
 export function SuggestionsPage({ members }) {
   const [suggestions, setSuggestions] = useState([]);
@@ -93,7 +111,11 @@ export function SuggestionsPage({ members }) {
     try {
       setLoading(true);
       const data = await api.getSuggestions();
-      setSuggestions(data || MOCK_SUGGESTIONS);
+      if (Array.isArray(data) && data.length > 0) {
+        setSuggestions(data.map(normalizeSuggestion));
+      } else {
+        setSuggestions(MOCK_SUGGESTIONS);
+      }
     } catch (error) {
       console.error('Failed to load suggestions:', error);
       setSuggestions(MOCK_SUGGESTIONS);
@@ -138,7 +160,7 @@ export function SuggestionsPage({ members }) {
       id: suggestions.length + 1,
       title: newSuggestion.title,
       description: newSuggestion.description,
-      author: members?.[0] || { id: 0, name: "You", avatar: "https://i.pravatar.cc/150?img=0" },
+      author: members?.[0] || { id: 0, name: "You", avatar: "YO" },
       createdAt: new Date().toISOString().split('T')[0],
       votes: 0,
       hasVoted: false,
@@ -347,8 +369,8 @@ export function SuggestionsPage({ members }) {
                     <Tag
                       label={suggestion.status}
                       style={{
-                        backgroundColor: `${STATUS_COLORS[suggestion.status]}20`,
-                        color: STATUS_COLORS[suggestion.status],
+                        backgroundColor: `${STATUS_COLORS[suggestion.status] || T.textMuted}20`,
+                        color: STATUS_COLORS[suggestion.status] || T.textMuted,
                         padding: '4px 10px',
                         fontSize: '12px',
                         borderRadius: '4px',

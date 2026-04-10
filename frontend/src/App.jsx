@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { T } from './theme';
 import { api } from './api';
 import LoginPage from './components/LoginPage';
@@ -15,6 +15,76 @@ import PrayerRequestPage from './pages/PrayerRequestPage';
 import { GalleryPage } from './pages/GalleryPage';
 import { SuggestionsPage } from './pages/SuggestionsPage';
 import { ConnectionTree } from './pages/ConnectionTree';
+
+// Error Boundary Component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('BRBR Error Boundary caught:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#0A0A0A',
+          color: '#F5EDE3',
+          fontFamily: 'Inter, sans-serif',
+          padding: '40px 20px',
+          textAlign: 'center',
+        }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>
+            &#x1F4D6;
+          </div>
+          <h2 style={{
+            fontFamily: 'Playfair Display, serif',
+            fontSize: '28px',
+            color: '#C9A688',
+            marginBottom: '12px',
+          }}>
+            Something went wrong
+          </h2>
+          <p style={{ color: '#999', maxWidth: '400px', lineHeight: '1.6', marginBottom: '24px' }}>
+            The page encountered an unexpected error. Please try refreshing or navigating back home.
+          </p>
+          <button
+            onClick={() => {
+              this.setState({ hasError: false, error: null });
+              if (this.props.onReset) this.props.onReset();
+            }}
+            style={{
+              background: '#C9A688',
+              color: '#0A0A0A',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '12px 32px',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: 'pointer',
+            }}
+          >
+            Go Home
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 const normalizeMember = (m) => {
   const ensureArray = (val) => {
@@ -120,12 +190,14 @@ function App() {
 
   if (!user) {
     return (
-      <LoginPage
-        onLogin={(loginResult) => {
-          if (loginResult.token) localStorage.setItem('token', loginResult.token);
-          setUser(loginResult.user || loginResult);
-        }}
-      />
+      <ErrorBoundary onReset={() => setPage('home')}>
+        <LoginPage
+          onLogin={(loginResult) => {
+            if (loginResult.token) localStorage.setItem('token', loginResult.token);
+            setUser(loginResult.user || loginResult);
+          }}
+        />
+      </ErrorBoundary>
     );
   }
 
@@ -135,26 +207,28 @@ function App() {
   };
 
   return (
-    <div style={{ fontFamily: T.fontBody, background: T.bg, minHeight: '100vh', color: T.text }}>
-      <Navbar
-        page={page} setPage={setPage} user={user}
-        notifications={notifications} unreadCount={unreadCount}
-        onMarkAllRead={handleMarkAllRead} onMarkRead={handleMarkRead}
-        onLogout={() => { localStorage.removeItem('token'); setUser(null); setPage('home'); }}
-      />
-      {page === 'home' && <HomePage user={user} members={members} setPage={setPage} setSelMember={setSelMember} />}
-      {page === 'directory' && <DirectoryPage members={members} setPage={setPage} setSelMember={setSelMember} />}
-      {page === 'profile-view' && <ProfileView member={selMember} setPage={setPage} onMessage={handleMsg} />}
-      {page === 'profile-me' && <MyProfile user={user} setPage={setPage} />}
-      {page === 'profile-edit' && <ProfileEdit user={user} setUser={setUser} setPage={setPage} />}
-      {page === 'messages' && <MessagesPage members={members} activeChat={activeChat} setActiveChat={setActiveChat} />}
-      {page === 'connections' && <ConnectionsPage members={members} />}
-      {page === 'jobs' && <JobBoardPage members={members} />}
-      {page === 'prayer' && <PrayerRequestPage members={members} />}
-      {page === 'gallery' && <GalleryPage members={members} />}
-      {page === 'suggestions' && <SuggestionsPage members={members} />}
-      {page === 'tree' && <ConnectionTree members={members} />}
-    </div>
+    <ErrorBoundary onReset={() => setPage('home')}>
+      <div style={{ fontFamily: T.fontBody, background: T.bg, minHeight: '100vh', color: T.text }}>
+        <Navbar
+          page={page} setPage={setPage} user={user}
+          notifications={notifications} unreadCount={unreadCount}
+          onMarkAllRead={handleMarkAllRead} onMarkRead={handleMarkRead}
+          onLogout={() => { localStorage.removeItem('token'); setUser(null); setPage('home'); }}
+        />
+        {page === 'home' && <HomePage user={user} members={members} setPage={setPage} setSelMember={setSelMember} />}
+        {page === 'directory' && <DirectoryPage members={members} setPage={setPage} setSelMember={setSelMember} />}
+        {page === 'profile-view' && <ProfileView member={selMember} setPage={setPage} onMessage={handleMsg} />}
+        {page === 'profile-me' && <MyProfile user={user} setPage={setPage} />}
+        {page === 'profile-edit' && <ProfileEdit user={user} setUser={setUser} setPage={setPage} />}
+        {page === 'messages' && <MessagesPage members={members} activeChat={activeChat} setActiveChat={setActiveChat} />}
+        {page === 'connections' && <ConnectionsPage members={members} />}
+        {page === 'jobs' && <JobBoardPage members={members} />}
+        {page === 'prayer' && <PrayerRequestPage members={members} />}
+        {page === 'gallery' && <GalleryPage members={members} />}
+        {page === 'suggestions' && <SuggestionsPage members={members} />}
+        {page === 'tree' && <ConnectionTree members={members} />}
+      </div>
+    </ErrorBoundary>
   );
 }
 

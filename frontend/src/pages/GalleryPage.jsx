@@ -89,6 +89,33 @@ const MOCK_GALLERY = [
   },
 ];
 
+const GRADIENTS = [
+  'linear-gradient(135deg, #C9A688 0%, #D4A0A0 100%)',
+  'linear-gradient(135deg, #B5653A 0%, #C9A688 100%)',
+  'linear-gradient(135deg, #D4A0A0 0%, #B5653A 100%)',
+  'linear-gradient(135deg, #8B4513 0%, #C9A688 100%)',
+  'linear-gradient(135deg, #A0522D 0%, #D4A0A0 100%)',
+  'linear-gradient(135deg, #CD853F 0%, #B5653A 100%)',
+  'linear-gradient(135deg, #D2B48C 0%, #C9A688 100%)',
+  'linear-gradient(135deg, #B5653A 0%, #A0522D 100%)',
+];
+
+// Normalize backend gallery data to match frontend shape
+const normalizeGalleryItem = (item, index) => ({
+  id: item.id,
+  category: item.category || 'creative',
+  caption: item.caption || '',
+  author: item.author || {
+    name: item.name || 'Anonymous',
+    avatar: item.avatar || (item.name ? item.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '??'),
+  },
+  date: item.date || (item.created_at ? item.created_at.split('T')[0] : new Date().toISOString().split('T')[0]),
+  likes: item.likes ?? item.like_count ?? 0,
+  comments: item.comments ?? item.comment_count ?? 0,
+  gradient: item.gradient || GRADIENTS[index % GRADIENTS.length],
+  url: item.url || null,
+});
+
 export function GalleryPage({ members }) {
   const [selectedTab, setSelectedTab] = useState('All');
   const [gallery, setGallery] = useState(MOCK_GALLERY);
@@ -103,11 +130,13 @@ export function GalleryPage({ members }) {
     const fetchGallery = async () => {
       try {
         const data = await api.getGallery();
-        if (data) {
-          setGallery(data);
+        if (Array.isArray(data) && data.length > 0) {
+          setGallery(data.map(normalizeGalleryItem));
         }
+        // If data is empty or not an array, keep MOCK_GALLERY
       } catch (error) {
         console.error('Error fetching gallery:', error);
+        // Keep MOCK_GALLERY on error
       }
     };
 
