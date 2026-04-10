@@ -18,7 +18,7 @@ export function Avatar({ name, size = 40, style = {} }) {
   );
 }
 
-export function Button({ children, variant = 'primary', onClick, style = {}, disabled = false }) {
+export function Button({ children, variant = 'primary', onClick, style = {}, disabled = false, ...rest }) {
   const base = {
     padding: '10px 24px', borderRadius: '4px', fontSize: '12px',
     fontFamily: T.fontBody, fontWeight: '600', letterSpacing: '1.5px',
@@ -33,7 +33,7 @@ export function Button({ children, variant = 'primary', onClick, style = {}, dis
     ghost: { background: 'transparent', color: T.primary, padding: '8px 16px' },
   };
   return (
-    <button onClick={disabled ? undefined : onClick} style={{ ...base, ...variants[variant], ...style }}>
+    <button onClick={disabled ? undefined : onClick} style={{ ...base, ...variants[variant], ...style }} {...rest}>
       {children}
     </button>
   );
