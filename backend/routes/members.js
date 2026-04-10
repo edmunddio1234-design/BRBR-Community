@@ -4,11 +4,11 @@ const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Get all members
+// Get all members — includes current_groups for connection tree and directory
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const result = await db.query(
-      'SELECT id, name, email, location, work, age, avatar, bio FROM users ORDER BY name'
+      'SELECT id, name, email, location, work, age, avatar, bio, current_groups FROM users ORDER BY name'
     );
     res.json(result.rows);
   } catch (err) {

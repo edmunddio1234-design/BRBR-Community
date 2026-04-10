@@ -1,7 +1,7 @@
 import React from 'react';
 import { T } from '../theme';
 import { S } from '../styles';
-import { Avatar, Button, Tag, Card } from '../components/UI';
+import { Button, Tag, Card } from '../components/UI';
 import Icon from '../components/Icons';
 import { api } from '../api';
 
@@ -10,18 +10,19 @@ export default function ProfileView({ member, setPage, onMessage }) {
     return (
       <div style={styles.container}>
         <p style={styles.emptyText}>Member not found</p>
-        <Button
-          onClick={() => setPage('directory')}
-          style={styles.backButton}
-        >
+        <Button onClick={() => setPage('directory')} style={styles.backButton}>
           Back to Directory
         </Button>
       </div>
     );
   }
 
-  const displayValue = (value) => value || '—';
+  const displayValue = (value) => value || '\u2014';
   const hasContent = (arr) => arr && arr.length > 0;
+
+  // Determine avatar: URL string (from mockMembers) or initials string (from old data)
+  const avatarIsUrl = member.avatar && (member.avatar.startsWith('http') || member.avatar.startsWith('data:'));
+  const avatarInitials = member.initials || (member.name ? member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '??');
 
   return (
     <div style={styles.container}>
@@ -42,7 +43,27 @@ export default function ProfileView({ member, setPage, onMessage }) {
       <Card style={styles.profileCard}>
         {/* Avatar and basic info */}
         <div style={styles.profileHeader}>
-          <Avatar name={member.name} size={120} />
+          {/* Photo-capable avatar */}
+          <div style={styles.avatarWrapper}>
+            {avatarIsUrl ? (
+              <img
+                src={member.avatar}
+                alt={member.name}
+                style={styles.avatarImg}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'flex';
+                }}
+              />
+            ) : null}
+            <div style={{
+              ...styles.avatarFallback,
+              display: avatarIsUrl ? 'none' : 'flex',
+            }}>
+              {avatarInitials}
+            </div>
+          </div>
+
           <div style={styles.profileInfo}>
             <h2 style={styles.name}>{member.name}</h2>
             {member.location && (
@@ -97,7 +118,7 @@ export default function ProfileView({ member, setPage, onMessage }) {
             {member.languages && (
               <div style={styles.aboutItem}>
                 <span style={styles.aboutLabel}>Languages</span>
-                <span style={styles.aboutValue}>{member.languages}</span>
+                <span style={styles.aboutValue}>{Array.isArray(member.languages) ? member.languages.join(', ') : member.languages}</span>
               </div>
             )}
           </div>
@@ -109,7 +130,7 @@ export default function ProfileView({ member, setPage, onMessage }) {
             <h3 style={styles.sectionTitle}>Reading Groups</h3>
             <div style={styles.tagsContainer}>
               {member.currentGroups.map((group) => (
-                <Tag key={group} label={group} style={styles.tag} />
+                <Tag key={group}>{group}</Tag>
               ))}
             </div>
           </div>
@@ -121,7 +142,7 @@ export default function ProfileView({ member, setPage, onMessage }) {
             <h3 style={styles.sectionTitle}>Spiritual Gifts</h3>
             <div style={styles.tagsContainer}>
               {member.spiritualGifts.map((gift) => (
-                <Tag key={gift} label={gift} style={styles.tag} />
+                <Tag key={gift}>{gift}</Tag>
               ))}
             </div>
           </div>
@@ -133,7 +154,7 @@ export default function ProfileView({ member, setPage, onMessage }) {
             <h3 style={styles.sectionTitle}>Hobbies & Interests</h3>
             <div style={styles.tagsContainer}>
               {member.hobbies.map((hobby) => (
-                <Tag key={hobby} label={hobby} style={styles.tag} />
+                <Tag key={hobby}>{hobby}</Tag>
               ))}
             </div>
           </div>
@@ -145,13 +166,13 @@ export default function ProfileView({ member, setPage, onMessage }) {
             <h3 style={styles.sectionTitle}>Available to Help With</h3>
             <div style={styles.tagsContainer}>
               {member.available.map((item) => (
-                <Tag key={item} label={item} style={styles.tag} />
+                <Tag key={item}>{item}</Tag>
               ))}
             </div>
           </div>
         )}
 
-        {/* Social */}
+        {/* Contact */}
         {(member.email || member.phone) && (
           <div style={styles.section}>
             <h3 style={styles.sectionTitle}>Contact</h3>
@@ -159,17 +180,13 @@ export default function ProfileView({ member, setPage, onMessage }) {
               {member.email && (
                 <div style={styles.contactItem}>
                   <Icon name="mail" size={16} color={T.primary} />
-                  <a href={`mailto:${member.email}`} style={styles.contactLink}>
-                    {member.email}
-                  </a>
+                  <a href={`mailto:${member.email}`} style={styles.contactLink}>{member.email}</a>
                 </div>
               )}
               {member.phone && (
                 <div style={styles.contactItem}>
                   <Icon name="phone" size={16} color={T.primary} />
-                  <a href={`tel:${member.phone}`} style={styles.contactLink}>
-                    {member.phone}
-                  </a>
+                  <a href={`tel:${member.phone}`} style={styles.contactLink}>{member.phone}</a>
                 </div>
               )}
             </div>
@@ -181,184 +198,31 @@ export default function ProfileView({ member, setPage, onMessage }) {
 }
 
 const styles = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 24,
-    padding: 24,
-    maxWidth: 800,
-    margin: '0 auto',
-  },
-
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 16,
-    marginBottom: 8,
-  },
-
-  title: {
-    fontSize: 24,
-    fontWeight: 600,
-    color: T.text,
-    margin: 0,
-    fontFamily: T.fontDisplay,
-    flex: 1,
-  },
-
-  backButtonSmall: {
-    background: 'none',
-    border: 'none',
-    padding: 8,
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.2s ease',
-  },
-
-  spacer: {
-    width: 36,
-  },
-
-  profileCard: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 32,
-    padding: 32,
-    background: T.bgCard,
-    border: `1px solid ${T.border}`,
-    borderRadius: 12,
-  },
-
-  profileHeader: {
-    display: 'flex',
-    gap: 32,
-    alignItems: 'flex-start',
-    paddingBottom: 24,
-    borderBottom: `1px solid ${T.border}`,
-  },
-
-  profileInfo: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 12,
-  },
-
-  name: {
-    fontSize: 32,
-    fontWeight: 700,
-    color: T.text,
-    margin: 0,
-    fontFamily: T.fontDisplay,
-  },
-
-  locationRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    color: T.textMuted,
-  },
-
-  location: {
-    fontSize: 14,
-    color: T.textMuted,
-  },
-
-  bio: {
-    fontSize: 14,
-    lineHeight: 1.6,
-    color: T.text,
-    margin: 8,
-  },
-
-  messageButton: {
-    alignSelf: 'flex-start',
-    paddingLeft: 24,
-    paddingRight: 24,
-  },
-
-  section: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 16,
-  },
-
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: 600,
-    color: T.primary,
-    margin: 0,
-    fontFamily: T.fontAccent,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-
-  aboutGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: 20,
-  },
-
-  aboutItem: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 4,
-  },
-
-  aboutLabel: {
-    fontSize: 12,
-    color: T.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    fontWeight: 600,
-  },
-
-  aboutValue: {
-    fontSize: 14,
-    color: T.text,
-    fontWeight: 500,
-  },
-
-  tagsContainer: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-
-  tag: {
-    padding: '6px 12px',
-    background: T.primaryFaint,
-    border: `1px solid ${T.border}`,
-    borderRadius: 20,
-    fontSize: 13,
-    color: T.primary,
-    fontWeight: 500,
-  },
-
-  contactGrid: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 12,
-  },
-
-  contactItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 12,
-  },
-
-  contactLink: {
-    fontSize: 14,
-    color: T.primary,
-    textDecoration: 'none',
-    transition: 'color 0.2s ease',
-  },
-
-  emptyText: {
-    fontSize: 14,
-    color: T.textMuted,
-    textAlign: 'center',
-  },
+  container: { display: 'flex', flexDirection: 'column', gap: 24, padding: 24, maxWidth: 800, margin: '0 auto' },
+  header: { display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 },
+  title: { fontSize: 24, fontWeight: 600, color: T.text, margin: 0, fontFamily: T.fontDisplay, flex: 1 },
+  backButtonSmall: { background: 'none', border: 'none', padding: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s ease' },
+  spacer: { width: 36 },
+  profileCard: { display: 'flex', flexDirection: 'column', gap: 32, padding: 32, background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: 12 },
+  profileHeader: { display: 'flex', gap: 32, alignItems: 'flex-start', paddingBottom: 24, borderBottom: `1px solid ${T.border}` },
+  avatarWrapper: { flexShrink: 0, width: 120, height: 120, borderRadius: '50%', overflow: 'hidden', border: `3px solid ${T.primary}` },
+  avatarImg: { width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' },
+  avatarFallback: { width: '100%', height: '100%', background: T.gradientPrimary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 42, fontWeight: '700', color: T.black, fontFamily: T.fontDisplay, letterSpacing: '2px' },
+  profileInfo: { flex: 1, display: 'flex', flexDirection: 'column', gap: 12 },
+  name: { fontSize: 32, fontWeight: 700, color: T.text, margin: 0, fontFamily: T.fontDisplay },
+  locationRow: { display: 'flex', alignItems: 'center', gap: 8, color: T.textMuted },
+  location: { fontSize: 14, color: T.textMuted },
+  bio: { fontSize: 14, lineHeight: 1.6, color: T.text, margin: 8 },
+  messageButton: { alignSelf: 'flex-start', paddingLeft: 24, paddingRight: 24 },
+  section: { display: 'flex', flexDirection: 'column', gap: 16 },
+  sectionTitle: { fontSize: 16, fontWeight: 600, color: T.primary, margin: 0, fontFamily: T.fontAccent, textTransform: 'uppercase', letterSpacing: 1 },
+  aboutGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20 },
+  aboutItem: { display: 'flex', flexDirection: 'column', gap: 4 },
+  aboutLabel: { fontSize: 12, color: T.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 },
+  aboutValue: { fontSize: 14, color: T.text, fontWeight: 500 },
+  tagsContainer: { display: 'flex', flexWrap: 'wrap', gap: 12 },
+  contactGrid: { display: 'flex', flexDirection: 'column', gap: 12 },
+  contactItem: { display: 'flex', alignItems: 'center', gap: 12 },
+  contactLink: { fontSize: 14, color: T.primary, textDecoration: 'none', transition: 'color 0.2s ease' },
+  emptyText: { fontSize: 14, color: T.textMuted, textAlign: 'center' },
 };

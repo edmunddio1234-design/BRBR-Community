@@ -2,22 +2,8 @@
 // African American Women across all 5 BRBR cities
 // Avatar URLs use ui-avatars.com with BRBR brand colors
 
-const CITIES = ['Baton Rouge', 'Houston', 'Atlanta', 'Dallas', 'New Orleans'];
-
-const GROUPS = [
-  'Healing Through Words',
-  'Faith Foundations',
-  'Growth Mindset',
-  'Sister Circle',
-  'Purpose & Prayer',
-];
-
 function avatarUrl(name) {
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=C9A688&color=0A0A0A&bold=true&size=128&font-size=0.4`;
-}
-
-function initials(name) {
-  return name.split(' ').map(n => n[0]).join('').toUpperCase();
 }
 
 export const MOCK_MEMBERS = [
@@ -82,5 +68,12 @@ export const MOCK_MEMBERS = [
   { id: 50, name: 'Treasure Simmons',  avatar: avatarUrl('Treasure Simmons'),  initials: 'TS', work: 'Nonprofit Director',        location: 'New Orleans',  bio: 'Running a nonprofit that provides housing, job training, and mentorship for formerly incarcerated women.',                       currentGroups: ['Purpose & Prayer', 'Faith Foundations'] },
 ];
 
-export const READING_GROUPS_LIST = GROUPS;
+export const READING_GROUPS_LIST = [
+  'Healing Through Words',
+  'Faith Foundations',
+  'Growth Mindset',
+  'Sister Circle',
+  'Purpose & Prayer',
+];
+
 export default MOCK_MEMBERS;

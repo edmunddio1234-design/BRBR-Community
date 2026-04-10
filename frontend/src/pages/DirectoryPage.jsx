@@ -1,9 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { T } from '../theme';
-import { S } from '../styles';
-import { Avatar, Button, Tag, Card, TabBar } from '../components/UI';
+import { Button, Tag, Card, TabBar } from '../components/UI';
 import Icon from '../components/Icons';
-import { READING_GROUPS } from '../constants';
 import { MOCK_MEMBERS } from '../mockMembers';
 
 const LOCATIONS = ['All', 'Baton Rouge', 'Houston', 'Atlanta', 'Dallas', 'New Orleans'];
@@ -13,18 +11,15 @@ export default function DirectoryPage({ members: propMembers, setPage, setSelMem
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('All');
 
-  // Filter members based on search query and location
   const filteredMembers = useMemo(() => {
     return members.filter((member) => {
       const matchesSearch =
         member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         member.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         member.work?.toLowerCase().includes(searchQuery.toLowerCase());
-
       const matchesLocation =
         selectedLocation === 'All' ||
         member.location?.includes(selectedLocation);
-
       return matchesSearch && matchesLocation;
     });
   }, [members, searchQuery, selectedLocation]);
@@ -34,18 +29,14 @@ export default function DirectoryPage({ members: propMembers, setPage, setSelMem
     setPage('profile-view');
   };
 
-  // Location stats
   const locationCounts = useMemo(() => {
     const counts = {};
-    members.forEach(m => {
-      counts[m.location] = (counts[m.location] || 0) + 1;
-    });
+    members.forEach(m => { counts[m.location] = (counts[m.location] || 0) + 1; });
     return counts;
   }, [members]);
 
   return (
     <div style={styles.container}>
-      {/* Header Section */}
       <div style={styles.header}>
         <h1 style={styles.title}>Reader Directory</h1>
         <p style={styles.subtitle}>
@@ -63,7 +54,6 @@ export default function DirectoryPage({ members: propMembers, setPage, setSelMem
         </div>
       </div>
 
-      {/* City Stats Bar */}
       <div style={styles.statsRow}>
         {LOCATIONS.filter(l => l !== 'All').map(city => (
           <div key={city} style={{
@@ -78,29 +68,24 @@ export default function DirectoryPage({ members: propMembers, setPage, setSelMem
         ))}
       </div>
 
-      {/* Filter Tabs */}
       <div style={styles.tabsSection}>
         <TabBar
           tabs={LOCATIONS}
-          activeTab={selectedLocation}
-          onTabChange={setSelectedLocation}
-          style={styles.tabBar}
+          active={selectedLocation}
+          onChange={setSelectedLocation}
         />
       </div>
 
-      {/* Results Count */}
       <div style={styles.resultCount}>
         {filteredMembers.length} reader{filteredMembers.length !== 1 ? 's' : ''} found
         {selectedLocation !== 'All' && ` in ${selectedLocation}`}
       </div>
 
-      {/* Members Grid */}
       {filteredMembers.length > 0 ? (
         <div style={styles.grid}>
           {filteredMembers.map((member) => (
             <Card key={member.id} style={styles.memberCard}>
               <div style={styles.cardHeader}>
-                {/* Profile Avatar with Photo */}
                 <div style={styles.avatarContainer}>
                   <img
                     src={member.avatar}
@@ -111,10 +96,7 @@ export default function DirectoryPage({ members: propMembers, setPage, setSelMem
                       e.target.nextSibling.style.display = 'flex';
                     }}
                   />
-                  <div style={{
-                    ...styles.avatarFallback,
-                    display: 'none',
-                  }}>
+                  <div style={{ ...styles.avatarFallback, display: 'none' }}>
                     {member.initials || member.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                   </div>
                 </div>
@@ -124,7 +106,6 @@ export default function DirectoryPage({ members: propMembers, setPage, setSelMem
                 </div>
               </div>
 
-              {/* Work/Role Section */}
               {member.work && (
                 <div style={styles.workSection}>
                   <p style={styles.workLabel}>Role</p>
@@ -132,37 +113,24 @@ export default function DirectoryPage({ members: propMembers, setPage, setSelMem
                 </div>
               )}
 
-              {/* Bio Preview */}
               {member.bio && (
                 <p style={styles.bioPreview}>
                   {member.bio.length > 90 ? member.bio.slice(0, 90) + '...' : member.bio}
                 </p>
               )}
 
-              {/* Reading Groups Tags */}
               {member.currentGroups && member.currentGroups.length > 0 && (
                 <div style={styles.tagsSection}>
                   <p style={styles.tagsLabel}>Reading Groups</p>
                   <div style={styles.tags}>
                     {member.currentGroups.map((group, idx) => (
-                      <Tag
-                        key={idx}
-                        label={group}
-                        style={styles.tag}
-                      >
-                        {group}
-                      </Tag>
+                      <Tag key={idx}>{group}</Tag>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* View Profile Button */}
-              <Button
-                label="View Profile"
-                onClick={() => handleViewProfile(member)}
-                style={styles.viewButton}
-              >
+              <Button onClick={() => handleViewProfile(member)} style={styles.viewButton}>
                 View Profile
               </Button>
             </Card>
@@ -178,246 +146,34 @@ export default function DirectoryPage({ members: propMembers, setPage, setSelMem
 }
 
 const styles = {
-  container: {
-    padding: '2rem',
-    backgroundColor: T.bg,
-    minHeight: '100vh',
-    fontFamily: T.fontBody,
-  },
-
-  header: {
-    marginBottom: '2rem',
-  },
-
-  title: {
-    fontSize: '2.5rem',
-    fontFamily: T.fontDisplay,
-    color: T.text,
-    margin: '0 0 0.5rem 0',
-    fontWeight: 700,
-  },
-
-  subtitle: {
-    fontSize: '0.95rem',
-    color: T.textMuted,
-    margin: '0 0 1.5rem 0',
-    lineHeight: 1.6,
-    maxWidth: '600px',
-    fontFamily: T.fontAccent,
-    fontStyle: 'italic',
-  },
-
-  searchBar: {
-    position: 'relative',
-    maxWidth: '500px',
-  },
-
-  searchInput: {
-    width: '100%',
-    padding: '0.75rem 1rem 0.75rem 2.5rem',
-    backgroundColor: T.bgCard,
-    border: `1px solid ${T.border}`,
-    borderRadius: '0.5rem',
-    color: T.text,
-    fontSize: '1rem',
-    fontFamily: T.fontBody,
-    outline: 'none',
-    transition: 'all 0.2s ease',
-  },
-
-  searchIcon: {
-    position: 'absolute',
-    left: '0.75rem',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    color: T.textMuted,
-    pointerEvents: 'none',
-  },
-
-  statsRow: {
-    display: 'flex',
-    gap: '12px',
-    marginBottom: '1.5rem',
-    overflowX: 'auto',
-    paddingBottom: '4px',
-  },
-
-  statChip: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '2px',
-    padding: '12px 20px',
-    borderRadius: '8px',
-    border: `1px solid ${T.border}`,
-    minWidth: '100px',
-    transition: 'all 0.2s ease',
-  },
-
-  tabsSection: {
-    marginBottom: '2rem',
-    overflowX: 'auto',
-  },
-
-  tabBar: {
-    display: 'flex',
-    gap: '0.5rem',
-  },
-
-  resultCount: {
-    fontSize: '0.875rem',
-    color: T.textMuted,
-    marginBottom: '1.5rem',
-    fontWeight: 500,
-  },
-
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-    gap: '1.5rem',
-  },
-
-  memberCard: {
-    padding: '1.5rem',
-    backgroundColor: T.bgCard,
-    border: `1px solid ${T.border}`,
-    borderRadius: '0.75rem',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.75rem',
-    transition: 'all 0.2s ease',
-    cursor: 'pointer',
-  },
-
-  cardHeader: {
-    display: 'flex',
-    gap: '1rem',
-    alignItems: 'center',
-  },
-
-  avatarContainer: {
-    flexShrink: 0,
-    width: '56px',
-    height: '56px',
-    borderRadius: '50%',
-    overflow: 'hidden',
-    border: `2px solid ${T.primary}`,
-  },
-
-  avatarImage: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-    borderRadius: '50%',
-  },
-
-  avatarFallback: {
-    width: '100%',
-    height: '100%',
-    background: T.gradientPrimary,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '18px',
-    fontWeight: '700',
-    color: T.black,
-    fontFamily: T.fontDisplay,
-  },
-
-  memberInfo: {
-    flex: 1,
-  },
-
-  memberName: {
-    fontSize: '1.125rem',
-    fontFamily: T.fontDisplay,
-    color: T.text,
-    margin: '0 0 0.25rem 0',
-    fontWeight: 600,
-  },
-
-  memberLocation: {
-    fontSize: '0.875rem',
-    color: T.primary,
-    margin: 0,
-  },
-
-  workSection: {
-    paddingTop: '0.5rem',
-    borderTop: `1px solid ${T.border}`,
-  },
-
-  workLabel: {
-    fontSize: '0.75rem',
-    color: T.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    margin: '0 0 0.5rem 0',
-  },
-
-  workValue: {
-    fontSize: '0.95rem',
-    color: T.text,
-    margin: 0,
-  },
-
-  bioPreview: {
-    fontSize: '0.8rem',
-    color: T.textBody,
-    lineHeight: 1.6,
-    margin: 0,
-    fontFamily: T.fontAccent,
-    fontStyle: 'italic',
-  },
-
-  tagsSection: {
-    paddingTop: '0.5rem',
-  },
-
-  tagsLabel: {
-    fontSize: '0.75rem',
-    color: T.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    margin: '0 0 0.5rem 0',
-  },
-
-  tags: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '0.5rem',
-  },
-
-  tag: {
-    backgroundColor: `rgba(201, 166, 136, 0.1)`,
-    color: T.primary,
-    fontSize: '0.8rem',
-    padding: '0.25rem 0.75rem',
-    borderRadius: '0.25rem',
-  },
-
-  viewButton: {
-    marginTop: 'auto',
-    padding: '0.75rem 1rem',
-    backgroundColor: T.primary,
-    color: T.bg,
-    border: 'none',
-    borderRadius: '0.5rem',
-    fontSize: '0.9rem',
-    fontWeight: 600,
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    fontFamily: T.fontBody,
-  },
-
-  noResults: {
-    textAlign: 'center',
-    padding: '3rem 1rem',
-  },
-
-  noResultsText: {
-    fontSize: '1rem',
-    color: T.textMuted,
-    margin: 0,
-  },
+  container: { padding: '2rem', backgroundColor: T.bg, minHeight: '100vh', fontFamily: T.fontBody },
+  header: { marginBottom: '2rem' },
+  title: { fontSize: '2.5rem', fontFamily: T.fontDisplay, color: T.text, margin: '0 0 0.5rem 0', fontWeight: 700 },
+  subtitle: { fontSize: '0.95rem', color: T.textMuted, margin: '0 0 1.5rem 0', lineHeight: 1.6, maxWidth: '600px', fontFamily: T.fontAccent, fontStyle: 'italic' },
+  searchBar: { position: 'relative', maxWidth: '500px' },
+  searchInput: { width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', backgroundColor: T.bgCard, border: `1px solid ${T.border}`, borderRadius: '0.5rem', color: T.text, fontSize: '1rem', fontFamily: T.fontBody, outline: 'none', transition: 'all 0.2s ease' },
+  searchIcon: { position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: T.textMuted, pointerEvents: 'none' },
+  statsRow: { display: 'flex', gap: '12px', marginBottom: '1.5rem', overflowX: 'auto', paddingBottom: '4px' },
+  statChip: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '12px 20px', borderRadius: '8px', border: `1px solid ${T.border}`, minWidth: '100px', transition: 'all 0.2s ease' },
+  tabsSection: { marginBottom: '2rem', overflowX: 'auto' },
+  resultCount: { fontSize: '0.875rem', color: T.textMuted, marginBottom: '1.5rem', fontWeight: 500 },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' },
+  memberCard: { padding: '1.5rem', backgroundColor: T.bgCard, border: `1px solid ${T.border}`, borderRadius: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', transition: 'all 0.2s ease', cursor: 'pointer' },
+  cardHeader: { display: 'flex', gap: '1rem', alignItems: 'center' },
+  avatarContainer: { flexShrink: 0, width: '56px', height: '56px', borderRadius: '50%', overflow: 'hidden', border: `2px solid ${T.primary}` },
+  avatarImage: { width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' },
+  avatarFallback: { width: '100%', height: '100%', background: T.gradientPrimary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: '700', color: T.black, fontFamily: T.fontDisplay },
+  memberInfo: { flex: 1 },
+  memberName: { fontSize: '1.125rem', fontFamily: T.fontDisplay, color: T.text, margin: '0 0 0.25rem 0', fontWeight: 600 },
+  memberLocation: { fontSize: '0.875rem', color: T.primary, margin: 0 },
+  workSection: { paddingTop: '0.5rem', borderTop: `1px solid ${T.border}` },
+  workLabel: { fontSize: '0.75rem', color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.5rem 0' },
+  workValue: { fontSize: '0.95rem', color: T.text, margin: 0 },
+  bioPreview: { fontSize: '0.8rem', color: T.textBody, lineHeight: 1.6, margin: 0, fontFamily: T.fontAccent, fontStyle: 'italic' },
+  tagsSection: { paddingTop: '0.5rem' },
+  tagsLabel: { fontSize: '0.75rem', color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.5rem 0' },
+  tags: { display: 'flex', flexWrap: 'wrap', gap: '0.5rem' },
+  viewButton: { marginTop: 'auto', padding: '0.75rem 1rem', backgroundColor: T.primary, color: T.bg, border: 'none', borderRadius: '0.5rem', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s ease', fontFamily: T.fontBody },
+  noResults: { textAlign: 'center', padding: '3rem 1rem' },
+  noResultsText: { fontSize: '1rem', color: T.textMuted, margin: 0 },
 };
