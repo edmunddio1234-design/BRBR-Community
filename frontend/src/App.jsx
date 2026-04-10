@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { T } from './theme';
 import { api } from './api';
+import { MOCK_MEMBERS } from './mockMembers';
 import LoginPage from './components/LoginPage';
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
@@ -131,9 +132,15 @@ function App() {
         .then((data) => {
           if (Array.isArray(data) && data.length > 0) {
             setMembers(data.map(normalizeMember));
+          } else {
+            // API returned empty — use mock data fallback
+            setMembers(MOCK_MEMBERS.map(normalizeMember));
           }
         })
-        .catch(() => {});
+        .catch(() => {
+          // API failed — use mock data fallback
+          setMembers(MOCK_MEMBERS.map(normalizeMember));
+        });
     }
   }, [user]);
 
@@ -221,7 +228,7 @@ function App() {
         {page === 'profile-me' && <MyProfile user={user} setPage={setPage} />}
         {page === 'profile-edit' && <ProfileEdit user={user} setUser={setUser} setPage={setPage} />}
         {page === 'messages' && <MessagesPage members={members} activeChat={activeChat} setActiveChat={setActiveChat} />}
-        {page === 'connections' && <ConnectionsPage members={members} />}
+        {page === 'connections' && <ConnectionsPage members={members} setPage={setPage} setActiveChat={setActiveChat} />}
         {page === 'jobs' && <JobBoardPage members={members} />}
         {page === 'prayer' && <PrayerRequestPage members={members} />}
         {page === 'gallery' && <GalleryPage members={members} />}

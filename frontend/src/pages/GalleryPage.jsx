@@ -1,78 +1,204 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { T } from '../theme';
+import { S } from '../styles';
+
+const BASE = 'https://raw.githubusercontent.com/edmunddio1234-design/BR-Collectionn/main/';
+
+const GALLERY_ITEMS = [
+  // Key images
+  { src: BASE + 'nikki-headshot.jpeg', title: 'Nikki', type: 'photo', featured: true },
+  { src: BASE + 'book-cover.jpeg', title: 'Book Cover', type: 'photo', featured: true },
+  // Gemini AI Portraits (actual filenames from repo)
+  { src: BASE + 'Gemini_Generated_Image_3j8oz43j8oz43j8o.jpeg', title: 'Portrait I', type: 'photo' },
+  { src: BASE + 'Gemini_Generated_Image_3vylow3vylow3vyl.jpeg', title: 'Portrait II', type: 'photo' },
+  { src: BASE + 'Gemini_Generated_Image_4pv4cl4pv4cl4pv4.jpeg', title: 'Portrait III', type: 'photo' },
+  { src: BASE + 'Gemini_Generated_Image_4vn63m4vn63m4vn6.jpeg', title: 'Portrait IV', type: 'photo' },
+  { src: BASE + 'Gemini_Generated_Image_5huckz5huckz5huc.jpeg', title: 'Portrait V', type: 'photo' },
+  { src: BASE + 'Gemini_Generated_Image_6del666del666del.jpeg', title: 'Portrait VI', type: 'photo' },
+  { src: BASE + 'Gemini_Generated_Image_6yijf86yijf86yij.jpeg', title: 'Portrait VII', type: 'photo' },
+  { src: BASE + 'Gemini_Generated_Image_9xavtz9xavtz9xav.jpeg', title: 'Portrait VIII', type: 'photo' },
+  { src: BASE + 'Gemini_Generated_Image_b83024b83024b830.jpeg', title: 'Portrait IX', type: 'photo' },
+  { src: BASE + 'Gemini_Generated_Image_d9ha4qd9ha4qd9ha.jpeg', title: 'Portrait X', type: 'photo' },
+  { src: BASE + 'Gemini_Generated_Image_dx6k6vdx6k6vdx6k.jpeg', title: 'Portrait XI', type: 'photo' },
+  { src: BASE + 'Gemini_Generated_Image_ex3fepex3fepex3f.jpeg', title: 'Portrait XII', type: 'photo' },
+  { src: BASE + 'Gemini_Generated_Image_fhb95ffhb95ffhb9.jpeg', title: 'Portrait XIII', type: 'photo' },
+  { src: BASE + 'Gemini_Generated_Image_ios6wzios6wzios6.jpeg', title: 'Portrait XIV', type: 'photo' },
+  { src: BASE + 'Gemini_Generated_Image_m8cf35m8cf35m8cf.jpeg', title: 'Portrait XV', type: 'photo' },
+  { src: BASE + 'Gemini_Generated_Image_mxzj8cmxzj8cmxzj.jpeg', title: 'Portrait XVI', type: 'photo' },
+  { src: BASE + 'Gemini_Generated_Image_ot6axhot6axhot6a.jpeg', title: 'Portrait XVII', type: 'photo' },
+  { src: BASE + 'Gemini_Generated_Image_r2bl1jr2bl1jr2bl.jpeg', title: 'Portrait XVIII', type: 'photo' },
+  { src: BASE + 'Gemini_Generated_Image_xmcitrxmcitrxmci.jpeg', title: 'Portrait XIX', type: 'photo' },
+  { src: BASE + 'Gemini_Generated_Image_y5ncjty5ncjty5nc.jpeg', title: 'Portrait XX', type: 'photo' },
+  { src: BASE + 'Gemini_Generated_Image_yevefkyevefkyeve.jpeg', title: 'Portrait XXI', type: 'photo' },
+  { src: BASE + 'Gemini_Generated_Image_z44ui3z44ui3z44u.jpeg', title: 'Portrait XXII', type: 'photo' },
+  { src: BASE + 'Gemini_Generated_Image_zdgpy9zdgpy9zdgp.jpeg', title: 'Portrait XXIII', type: 'photo' },
+  // Creative images (URL-encoded filenames with spaces/parens)
+  { src: BASE + 'Creative_image_9.png', title: 'Creative Vision', type: 'photo' },
+  { src: BASE + 'creative_image_9_16_0408.png', title: 'Creative I', type: 'photo' },
+  { src: BASE + 'creative_image_9_16_0408%20(1).png', title: 'Creative II', type: 'photo' },
+  { src: BASE + 'creative_image_9_16_0408%20(2).png', title: 'Creative III', type: 'photo' },
+  { src: BASE + 'creative_image_9_16_0408%20(3).png', title: 'Creative IV', type: 'photo' },
+  // Videos
+  { src: BASE + 'Creative_video%204mp4.mp4', title: 'Community Moments', type: 'video' },
+  { src: BASE + 'Creative_video_2mp4.mp4', title: 'Our Story', type: 'video' },
+  { src: BASE + 'Dawn_Prayer_Video_Generation.mp4', title: 'Dawn Prayer', type: 'video' },
+  { src: BASE + 'creative_video_9_16_0408.mp4', title: 'Creative Reel', type: 'video' },
+];
+
+const TABS = ['All', 'Photos', 'Videos'];
 
 export function GalleryPage() {
+  const [activeTab, setActiveTab] = useState('All');
+  const [lightbox, setLightbox] = useState(null);
+
+  const filtered = GALLERY_ITEMS.filter(item => {
+    if (activeTab === 'Photos') return item.type === 'photo';
+    if (activeTab === 'Videos') return item.type === 'video';
+    return true;
+  });
+
+  const photos = GALLERY_ITEMS.filter(i => i.type === 'photo');
+  const videos = GALLERY_ITEMS.filter(i => i.type === 'video');
+
   return (
-    <div style={{
-      backgroundColor: T.bg,
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '40px 20px',
-      fontFamily: T.fontBody,
-      textAlign: 'center',
-    }}>
-      <div style={{
-        fontSize: '64px',
-        marginBottom: '24px',
-      }}>
-        &#x1F3A8;
+    <div style={{ minHeight: '100vh', backgroundColor: T.bg, padding: '24px' }}>
+      {/* Header */}
+      <div style={{ marginBottom: '32px' }}>
+        <h1 style={{
+          fontFamily: T.fontDisplay, fontSize: '32px', fontWeight: '700',
+          color: T.text, margin: '0 0 8px 0',
+        }}>
+          Gallery
+        </h1>
+        <p style={{ color: T.textMuted, fontSize: '14px', margin: 0 }}>
+          {photos.length} photos &middot; {videos.length} videos
+        </p>
       </div>
-      <h1 style={{
-        fontFamily: T.fontDisplay,
-        fontSize: '36px',
-        fontWeight: '700',
-        color: T.primary,
-        margin: '0 0 16px 0',
-        letterSpacing: '1px',
-      }}>
-        Under Construction
-      </h1>
-      <p style={{
-        fontSize: '16px',
-        color: T.textMuted,
-        maxWidth: '480px',
-        lineHeight: '1.7',
-        margin: '0 0 32px 0',
-      }}>
-        The Gallery is being crafted with care. Soon you&apos;ll be able to share photos,
-        creative works, and community moments with your BRBR family.
-      </p>
-      <div style={{
-        display: 'flex',
-        gap: '12px',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-      }}>
-        {['Photo Sharing', 'Creative Works', 'Community Moments'].map((feature) => (
-          <span
-            key={feature}
+
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', borderBottom: `1px solid rgba(201,166,136,0.2)`, paddingBottom: '12px' }}>
+        {TABS.map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
             style={{
-              padding: '8px 20px',
-              borderRadius: '20px',
-              border: `1px solid ${T.primary}`,
-              color: T.primary,
-              fontSize: '13px',
-              fontWeight: '500',
-              opacity: 0.7,
+              padding: '8px 20px', borderRadius: '6px', border: 'none', cursor: 'pointer',
+              fontWeight: activeTab === tab ? '600' : '500', fontSize: '14px',
+              backgroundColor: activeTab === tab ? T.primary : 'transparent',
+              color: activeTab === tab ? T.bg : T.textMuted,
+              transition: 'all 0.2s ease', fontFamily: T.fontBody,
             }}
           >
-            {feature}
-          </span>
+            {tab}
+          </button>
         ))}
       </div>
-      <p style={{
-        fontSize: '13px',
-        color: T.textMuted,
-        marginTop: '48px',
-        opacity: 0.5,
-        fontStyle: 'italic',
-        fontFamily: T.fontAccent,
+
+      {/* Gallery Grid */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+        gap: '16px',
       }}>
-        &ldquo;Every picture tells a story.&rdquo;
-      </p>
+        {filtered.map((item, idx) => (
+          <div
+            key={idx}
+            onClick={() => setLightbox(item)}
+            style={{
+              position: 'relative', borderRadius: '10px', overflow: 'hidden',
+              cursor: 'pointer', backgroundColor: T.bgCard,
+              border: `1px solid ${T.border}`,
+              aspectRatio: item.featured ? '3/4' : '1',
+              transition: 'transform 0.2s ease, border-color 0.2s ease',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.borderColor = T.primary; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.borderColor = T.border; }}
+          >
+            {item.type === 'video' ? (
+              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(10,10,10,0.8)' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '36px', marginBottom: '8px' }}>&#9654;</div>
+                  <span style={{ color: T.primary, fontSize: '13px', fontWeight: '600' }}>{item.title}</span>
+                </div>
+              </div>
+            ) : (
+              <img
+                src={item.src}
+                alt={item.title}
+                loading="lazy"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                onError={e => {
+                  e.target.style.display = 'none';
+                  e.target.parentElement.style.display = 'flex';
+                  e.target.parentElement.style.alignItems = 'center';
+                  e.target.parentElement.style.justifyContent = 'center';
+                  const fallback = document.createElement('span');
+                  fallback.textContent = item.title;
+                  fallback.style.color = T.textMuted;
+                  fallback.style.fontSize = '13px';
+                  e.target.parentElement.appendChild(fallback);
+                }}
+              />
+            )}
+            {/* Title overlay */}
+            <div style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0,
+              padding: '8px 12px',
+              background: 'linear-gradient(transparent, rgba(0,0,0,0.7))',
+              pointerEvents: 'none',
+            }}>
+              <span style={{ color: '#fff', fontSize: '12px', fontWeight: '500' }}>{item.title}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Lightbox Modal */}
+      {lightbox && (
+        <div
+          onClick={() => setLightbox(null)}
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.92)', display: 'flex',
+            alignItems: 'center', justifyContent: 'center', zIndex: 9999,
+            padding: '24px', cursor: 'pointer',
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ maxWidth: '90vw', maxHeight: '90vh', position: 'relative', cursor: 'default' }}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setLightbox(null)}
+              style={{
+                position: 'absolute', top: '-40px', right: 0,
+                background: 'none', border: 'none', color: '#fff',
+                fontSize: '28px', cursor: 'pointer', padding: '4px 8px',
+              }}
+            >
+              &times;
+            </button>
+            {lightbox.type === 'video' ? (
+              <video
+                src={lightbox.src}
+                controls
+                autoPlay
+                style={{ maxWidth: '90vw', maxHeight: '80vh', borderRadius: '8px' }}
+              />
+            ) : (
+              <img
+                src={lightbox.src}
+                alt={lightbox.title}
+                style={{ maxWidth: '90vw', maxHeight: '80vh', borderRadius: '8px', objectFit: 'contain' }}
+              />
+            )}
+            <p style={{ color: '#fff', textAlign: 'center', marginTop: '12px', fontFamily: T.fontDisplay, fontSize: '16px' }}>
+              {lightbox.title}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

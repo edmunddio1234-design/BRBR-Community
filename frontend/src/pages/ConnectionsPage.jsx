@@ -69,10 +69,12 @@ const mockPosts = [
   },
 ];
 
-const ConnectionsPage = ({ members }) => {
+const ConnectionsPage = ({ members, setPage, setActiveChat }) => {
   const [posts, setPosts] = useState([]);
   const [activeTab, setActiveTab] = useState('all');
   const [showModal, setShowModal] = useState(false);
+  const [responseModal, setResponseModal] = useState(null);
+  const [responseText, setResponseText] = useState('');
   const [formData, setFormData] = useState({
     type: 'seeking',
     title: '',
@@ -130,6 +132,26 @@ const ConnectionsPage = ({ members }) => {
         ? prev.categories.filter((c) => c !== category)
         : [...prev.categories, category],
     }));
+  };
+
+  const handleRespond = (post) => {
+    setResponseModal(post);
+    setResponseText('');
+  };
+
+  const handleSendResponse = () => {
+    if (!responseText.trim()) return;
+    // Increment response count locally
+    setPosts(prev => prev.map(p =>
+      p.id === responseModal.id ? { ...p, responseCount: p.responseCount + 1 } : p
+    ));
+    // If setPage and setActiveChat are available, navigate to messages
+    if (setPage && setActiveChat) {
+      setActiveChat(responseModal.posterId);
+      setPage('messages');
+    }
+    setResponseModal(null);
+    setResponseText('');
   };
 
   const getPostColor = (type) => {
@@ -290,10 +312,10 @@ const ConnectionsPage = ({ members }) => {
                 ))}
               </div>
 
-              {/* Action Button */}
+              {/* Action Button — NOW WIRED UP */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <Button
-                  onClick={() => {}}
+                  onClick={() => handleRespond(post)}
                   style={{
                     backgroundColor: T.primary,
                     color: T.bg,
@@ -315,6 +337,71 @@ const ConnectionsPage = ({ members }) => {
           ))
         )}
       </div>
+
+      {/* Response Modal — NEW */}
+      {responseModal && (
+        <div
+          onClick={() => setResponseModal(null)}
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex',
+            alignItems: 'center', justifyContent: 'center', zIndex: 9999,
+            padding: '24px',
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              backgroundColor: T.bgCard, borderRadius: '12px',
+              border: `1px solid rgba(201,166,136,0.2)`, padding: '24px',
+              maxWidth: '500px', width: '90%',
+            }}
+          >
+            <h2 style={{ color: T.text, fontSize: '20px', fontWeight: '700', margin: '0 0 8px 0' }}>
+              {responseModal.type === 'offering' ? 'Respond to Offer' : 'Offer Your Help'}
+            </h2>
+            <p style={{ color: T.textMuted, fontSize: '13px', margin: '0 0 20px 0' }}>
+              Replying to <strong style={{ color: T.primary }}>{responseModal.posterName}</strong>: {responseModal.title}
+            </p>
+            <textarea
+              value={responseText}
+              onChange={e => setResponseText(e.target.value)}
+              placeholder={responseModal.type === 'offering' ? "I'm interested! Let me know more details..." : "I can help with this! Here's how..."}
+              autoFocus
+              style={{
+                width: '100%', backgroundColor: T.bg, color: T.text,
+                border: `1px solid rgba(201,166,136,0.2)`, borderRadius: '6px',
+                padding: '12px', fontSize: '14px', minHeight: '120px',
+                fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical',
+              }}
+            />
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '16px' }}>
+              <button
+                onClick={() => setResponseModal(null)}
+                style={{
+                  backgroundColor: 'transparent', color: T.primary,
+                  padding: '10px 20px', borderRadius: '6px',
+                  border: `1px solid rgba(201,166,136,0.3)`,
+                  cursor: 'pointer', fontWeight: '600', fontSize: '14px',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSendResponse}
+                style={{
+                  backgroundColor: T.primary, color: T.bg,
+                  padding: '10px 20px', borderRadius: '6px', border: 'none',
+                  cursor: 'pointer', fontWeight: '600', fontSize: '14px',
+                  opacity: responseText.trim() ? 1 : 0.5,
+                }}
+              >
+                Send &amp; Message
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal for Creating New Post */}
       <Modal
