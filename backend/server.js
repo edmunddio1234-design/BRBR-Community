@@ -37,21 +37,21 @@ app.use('/api/gallery', galleryRoutes);
 app.use('/api/suggestions', suggestionsRoutes);
 app.use('/api/notifications', notificationsRoutes);
 
-// Initialize database and start server
+// Start server — don't crash if DB isn't ready yet
 const PORT = process.env.PORT || 3001;
 
 async function initializeApp() {
+  // Start the server first so Render health checks pass
+  app.listen(PORT, () => {
+    console.log(`BRBR Community API server running on port ${PORT}`);
+  });
+
+  // Then test DB connection
   try {
-    // Test database connection
     const result = await db.query('SELECT NOW()');
     console.log('Database connected at:', result.rows[0].now);
-
-    app.listen(PORT, () => {
-      console.log(`BRBR Community API server running on port ${PORT}`);
-    });
   } catch (err) {
-    console.error('Failed to initialize app:', err);
-    process.exit(1);
+    console.error('Database connection failed (will retry on requests):', err.message);
   }
 }
 
